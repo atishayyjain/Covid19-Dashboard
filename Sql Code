@@ -1,0 +1,80 @@
+--  Exploring the Dataset Covid Deaths
+
+Select * 
+from [Project 1].dbo.CovidDeaths
+
+--  Exploring the Dataset Covid Vaccinations
+Select * 
+from [Project 1].dbo.CovidVaccination
+
+-- Finding the Death Percentage Of India
+
+select Location, date, total_cases,total_deaths, (total_deaths/total_cases)*100 as DeathPercentage
+from [Project 1].dbo.CovidDeaths 
+where location like '%India%' 
+order by 1,2
+
+-- Finding the Confirmed Case Percentage of India
+
+select Location, date,population ,total_cases, (total_cases/population)*100 as Case_Percentage
+from [Project 1].dbo.CovidDeaths 
+where location like '%India%' 
+order by 1,2
+
+
+
+-- Finding The Highest Infection Count and Percent Population infected by Country
+Select Location, Population, MAX(total_cases) as HighestInfectionCount,  Max((total_cases/population))*100 as PercentPopulationInfected
+From [Project 1].dbo.CovidDeaths
+Group by Location, Population
+order by PercentPopulationInfected desc
+
+
+
+-- Finding The Highest Infection Count and Percent Population infected by Country And Date
+Select Location, Population,date, MAX(total_cases) as HighestInfectionCount,  Max((total_cases/population))*100 as PercentPopulationInfected
+From [Project 1].dbo.CovidDeaths
+--Where location like '%states%'
+Group by Location, Population, date
+order by PercentPopulationInfected desc
+
+
+
+-- Finding the Total Death Count Grouping it by Country
+select Location, max(cast(total_deaths as bigint)) as TotalDeathCount  --total deaths is in char format we need to change it to bigint to get correct readings
+from [Project 1].dbo.CovidDeaths 
+where continent is not NULL 
+group by Location 
+order by 2 desc
+
+-- Finding the Total Death Count Grouping it by Continent
+Select location, SUM(cast(new_deaths as int)) as TotalDeathCount
+From [Project 1].dbo.CovidDeaths
+Where continent is null 
+and location not in ('World', 'European Union', 'International', 'Upper middle income', 'High income', 'Lower middle income', 'Low income')
+Group by location
+order by TotalDeathCount desc
+
+
+-- Finding the global Death Percentage
+select sum(new_cases) as total_Cases, sum(cast(new_deaths as bigint)) as total_deaths, sum(cast(new_deaths as bigint))/sum(new_cases)*100 as DeathPercentage
+from [Project 1].dbo.CovidDeaths 
+where continent is not null
+order by 1,2
+
+
+-- Joining The Two tables ie Covid Deaths and Covid Vaccinations
+ select * 
+ from [Project 1].dbo.CovidDeaths dea
+ join [Project 1].dbo.CovidVaccination vac
+ on dea.location = vac.location and
+ dea.date = vac.date
+
+ -- Finding the New Vaccination count given in each country according to date
+ select dea.continent, dea.location, dea.date, population, vac.new_vaccinations
+ from [Project 1].dbo.CovidDeaths dea
+ join [Project 1].dbo.CovidVaccination vac
+ on dea.location = vac.location and
+ dea.date = vac.date
+ where dea.continent is not null
+ order by 1,2,3
